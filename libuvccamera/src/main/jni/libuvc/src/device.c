@@ -1193,9 +1193,11 @@ uvc_error_t uvc_scan_streaming(uvc_device_t *dev, uvc_device_info_t *info,
 	uvc_error_t ret, parse_ret;
 	uvc_streaming_interface_t *stream_if;
 
+int i = 0;
 	UVC_ENTER();
 
 	ret = UVC_SUCCESS;
+
 
 	if_desc = &(info->config->interface[interface_idx].altsetting[0]);
 	buffer = if_desc->extra;
@@ -1208,6 +1210,7 @@ uvc_error_t uvc_scan_streaming(uvc_device_t *dev, uvc_device_info_t *info,
 			buffer_left = if_desc->endpoint[0].extra_length;
 		}
 	}
+
 	stream_if = calloc(1, sizeof(*stream_if));
 	stream_if->parent = info;
 	stream_if->bInterfaceNumber = if_desc->bInterfaceNumber;
@@ -1215,17 +1218,25 @@ uvc_error_t uvc_scan_streaming(uvc_device_t *dev, uvc_device_info_t *info,
 
 	if (LIKELY(buffer_left >= 3)) {
 		while (buffer_left >= 3) {
+//LOGW("scan_streaming WHILE: %u %08p\n", buffer_left, buffer);
 			block_size = buffer[0];
 //			MARK("bDescriptorType=0x%02x", buffer[1]);
+//LOGW("scan_streaming WHILE BLOCK SIZE: %d\n", block_size);
 			parse_ret = uvc_parse_vs(dev, info, stream_if, buffer, block_size);
+//LOGW("scan_streaming parse_ret: AFTER PARSE 0x%08x 0x%08x\n", parse_ret, UVC_SUCCESS);
 
 			if (parse_ret != UVC_SUCCESS) {
+//LOGW("scan_streaming NOT EQUALS\n");
 				ret = parse_ret;
 				break;
 			}
 
 			buffer_left -= block_size;
 			buffer += block_size;
+                        if (block_size == 0) {
+                          LOGW("scan_streaming: ZERO BLOCKSIZE! Breaking...\n");
+                          break;
+                        }
 		}
 	} else {
 		LOGW("This VideoStreaming interface has no extra data");
