@@ -333,9 +333,7 @@ int UVCPreview::startPreview() {
 		mIsRunning = true;
 		pthread_mutex_lock(&preview_mutex);
 		{
-			if (LIKELY(mPreviewWindow)) {
 				result = pthread_create(&preview_thread, NULL, preview_thread_func, (void *)this);
-			}
 		}
 		pthread_mutex_unlock(&preview_mutex);
 		if (UNLIKELY(result != EXIT_SUCCESS)) {
@@ -545,7 +543,9 @@ void UVCPreview::do_preview(uvc_stream_ctrl_t *ctrl) {
 			for ( ; LIKELY(isRunning()) ; ) {
 				frame = waitPreviewFrame();
 				if (LIKELY(frame)) {
-					frame = draw_preview_one(frame, &mPreviewWindow, uvc_any2rgbx, 4);
+                                  if (LIKELY(mPreviewWindow)) {
+                                      frame = draw_preview_one(frame, &mPreviewWindow, uvc_any2rgbx, 4);
+                                   }
 					addCaptureFrame(frame);
 				}
 			}
@@ -845,7 +845,6 @@ void UVCPreview::do_capture_surface(JNIEnv *env) {
  */
 void UVCPreview::do_capture_callback(JNIEnv *env, uvc_frame_t *frame) {
 	ENTER();
-
 	if (LIKELY(frame)) {
 		uvc_frame_t *callback_frame = frame;
 		if (mFrameCallbackObj) {
@@ -866,7 +865,11 @@ void UVCPreview::do_capture_callback(JNIEnv *env, uvc_frame_t *frame) {
 			}
 			jobject buf = env->NewDirectByteBuffer(callback_frame->data, callbackPixelBytes);
 			env->CallVoidMethod(mFrameCallbackObj, iframecallback_fields.onFrame, buf);
-			env->ExceptionClear();
+                        jboolean hasException = env->ExceptionCheck();
+                        if (hasException) {
+                          env->ExceptionClear();
+                          LOGW("Got an exception while invoking the frame callback!");
+                        }
 			env->DeleteLocalRef(buf);
 		}
  SKIP:
