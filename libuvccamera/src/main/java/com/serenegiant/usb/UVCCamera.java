@@ -39,6 +39,9 @@ import android.view.SurfaceHolder;
 
 import com.serenegiant.usb.USBMonitor.UsbControlBlock;
 
+import static android.icu.lang.UCharacter.GraphemeClusterBreak.L;
+import static android.webkit.ConsoleMessage.MessageLevel.LOG;
+
 public class UVCCamera {
 	private static final boolean DEBUG = false;	// TODO set false when releasing
 	private static final String TAG = UVCCamera.class.getSimpleName();
@@ -127,7 +130,7 @@ public class UVCCamera {
 	private UsbControlBlock mCtrlBlock;
     protected long mControlSupports;			// カメラコントロールでサポートしている機能フラグ
     protected long mProcSupports;				// プロセッシングユニットでサポートしている機能フラグ
-    protected int mCurrentFrameFormat = FRAME_FORMAT_MJPEG;
+    protected int mCurrentFrameFormat = FRAME_FORMAT_YUYV;
 	protected int mCurrentWidth = DEFAULT_PREVIEW_WIDTH, mCurrentHeight = DEFAULT_PREVIEW_HEIGHT;
 	protected float mCurrentBandwidthFactor = DEFAULT_BANDWIDTH;
     protected String mSupportedSize;
@@ -347,12 +350,16 @@ public class UVCCamera {
 			final int format_nums = formats.length();
 			for (int i = 0; i < format_nums; i++) {
 				final JSONObject format = formats.getJSONObject(i);
+				if (!format.has("type")) {
+					continue;
+				}
 				final int format_type = format.getInt("type");
 				if ((format_type == type) || (type == -1)) {
 					addSize(format, format_type, 0, result);
 				}
 			}
 		} catch (final JSONException e) {
+			Log.d(TAG, "Error parsing list: " + supportedSize);
 		}
 		return result;
 	}
