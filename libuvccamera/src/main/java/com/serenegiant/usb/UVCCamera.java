@@ -23,13 +23,6 @@
 
 package com.serenegiant.usb;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import android.graphics.SurfaceTexture;
 import android.hardware.usb.UsbDevice;
 import android.text.TextUtils;
@@ -39,8 +32,12 @@ import android.view.SurfaceHolder;
 
 import com.serenegiant.usb.USBMonitor.UsbControlBlock;
 
-import static android.icu.lang.UCharacter.GraphemeClusterBreak.L;
-import static android.webkit.ConsoleMessage.MessageLevel.LOG;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class UVCCamera {
 	private static final boolean DEBUG = false;	// TODO set false when releasing
@@ -63,6 +60,7 @@ public class UVCCamera {
 	public static final int PIXEL_FORMAT_RGBX = 3;
 	public static final int PIXEL_FORMAT_YUV420SP = 4;
 	public static final int PIXEL_FORMAT_NV21 = 5;		// = YVU420SemiPlanar
+	public static final int PIXEL_FORMAT_MPEG = 6;
 
 	//--------------------------------------------------------------------------------
     public static final int	CTRL_SCANNING		= 0x00000001;	// D0:  Scanning Mode
